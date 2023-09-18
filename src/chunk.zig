@@ -1,7 +1,7 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 
-pub const OpCode = enum(u8) { Constant, Return, _ };
+pub const OpCode = enum(u8) { Constant, Add, Subtract, Multiply, Divide, Negate, Return, _ };
 
 const Code = struct {
     // opcode or constant index
@@ -64,6 +64,21 @@ pub const Chunk = struct {
         switch (instruction) {
             .Return => {
                 return self.simpleInstruction("OP_RETURN", offset);
+            },
+            .Add => {
+                return self.simpleInstruction("OP_ADD", offset);
+            },
+            .Subtract => {
+                return self.simpleInstruction("OP_SUBTRACT", offset);
+            },
+            .Multiply => {
+                return self.simpleInstruction("OP_MULTIPLY", offset);
+            },
+            .Divide => {
+                return self.simpleInstruction("OP_DIVIDE", offset);
+            },
+            .Negate => {
+                return self.simpleInstruction("OP_NEGATE", offset);
             },
             .Constant => {
                 return self.constantInstruction("OP_CONSTANT", offset);

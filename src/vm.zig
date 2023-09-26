@@ -4,6 +4,8 @@ const ArrayList = std.ArrayList;
 const _chunk = @import("./chunk.zig");
 const Chunk = _chunk.Chunk;
 
+const compiler = @import("./compiler.zig");
+
 const InterpreterError = error{ CompileError, RuntimeError };
 
 pub fn init(alloc: std.mem.Allocator, chunk: *Chunk) VM {
@@ -18,9 +20,11 @@ pub const VM = struct {
     ip: usize = 0,
     stack: ArrayList(f64),
 
-    pub fn interpret(self: *VM) !void {
-        self.ip = 0;
-        return self.run();
+    pub fn interpret(self: *VM, source: []u8) !void {
+        _ = self;
+        compiler.compile(source);
+        // self.ip = 0;
+        // return self.run();
     }
 
     fn readByte(self: *VM) u8 {

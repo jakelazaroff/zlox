@@ -5,18 +5,46 @@ const _chunk = @import("chunk.zig");
 const _vm = @import("vm.zig");
 
 pub fn main() !void {
+    const args = try std.process.argsAlloc(alloc);
+
     var chunk = _chunk.init(alloc);
     var vm = _vm.init(alloc, &chunk);
 
-    try chunk.writeConstant(1.2, 123);
-    try chunk.writeConstant(3.4, 123);
-    try chunk.write(.Add, 123);
-    try chunk.writeConstant(5.6, 123);
-    try chunk.write(.Divide, 123);
+    switch (args.len) {
+        1 => {
+            try repl(&vm);
+        },
+        2 => {
+            std.debug.print("file", .{});
+        },
+        else => {
+            std.debug.print("Usage: zlox [path]", .{});
+            std.process.exit(64);
+        },
+    }
+}
 
-    try chunk.write(.Negate, 123);
-    try chunk.write(.Return, 123);
+fn repl(vm: *_vm.VM) !void {
+    const stdin = std.io.getStdIn().reader();
+    const stdout = std.io.getStdOut().writer();
 
-    chunk.disassemble("test chunk");
-    try vm.interpret();
+    var buf: [1024]u8 = undefined;
+    var stream = std.io.fixedBufferStream(&buf);
+    const writer = stream.writer();
+
+    while (true) {
+        try stdout.print("> ", .{});
+
+        try stdin.streamUntilDelimiter(writer, '\n', null);
+        const pos = try stream.getPos();
+
+        if (pos == 0) {
+            try stdout.print("\n", .{});
+            break;
+        }
+
+        std.debug.print("{s}\n", .{buf[0..pos]});
+        try vm.interpret(buf[0..pos]);
+        try stream.seekTo(0);
+    }
 }

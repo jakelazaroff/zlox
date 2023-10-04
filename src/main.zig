@@ -6,9 +6,8 @@ const _vm = @import("vm.zig");
 
 pub fn main() !void {
     const args = try std.process.argsAlloc(alloc);
-
-    var chunk = _chunk.init(alloc);
-    var vm = _vm.init(alloc, &chunk);
+    var vm = _vm.init();
+    // defer alloc.destroy(&vm);
 
     switch (args.len) {
         1 => {

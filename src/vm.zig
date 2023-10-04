@@ -1,17 +1,18 @@
 const std = @import("std");
+const alloc = std.heap.page_allocator;
 const ArrayList = std.ArrayList;
 
 const _chunk = @import("./chunk.zig");
 const Chunk = _chunk.Chunk;
 
-const compiler = @import("./compiler.zig");
+const _compiler = @import("./compiler.zig");
 
-const InterpreterError = error{ CompileError, RuntimeError };
+pub const InterpreterError = error{ CompileError, RuntimeError };
 
-pub fn init(alloc: std.mem.Allocator, chunk: *Chunk) VM {
+pub fn init() VM {
     return VM{
+        .chunk = undefined,
         .stack = std.ArrayList(f64).init(alloc),
-        .chunk = chunk,
     };
 }
 
@@ -21,10 +22,13 @@ pub const VM = struct {
     stack: ArrayList(f64),
 
     pub fn interpret(self: *VM, source: []u8) !void {
-        _ = self;
-        compiler.compile(source);
-        // self.ip = 0;
-        // return self.run();
+        self.chunk = try _chunk.init(alloc);
+        defer alloc.destroy(self.chunk);
+
+        var compiler = _compiler.init();
+        try compiler.compile(source, self.chunk);
+        self.ip = 0;
+        try self.run();
     }
 
     fn readByte(self: *VM) u8 {
@@ -34,8 +38,7 @@ pub const VM = struct {
         return code[0];
     }
 
-    const operation = *const fn (a: f64, b: f64) f64;
-    fn binaryOp(self: *VM, op: operation) !void {
+    fn binaryOp(self: *VM, op: Operation) !void {
         const b = self.stack.pop();
         const a = self.stack.pop();
         try self.stack.append(op(a, b));
@@ -77,6 +80,8 @@ pub const VM = struct {
         }
     }
 };
+
+const Operation = *const fn (a: f64, b: f64) f64;
 
 fn add(a: f64, b: f64) f64 {
     return a + b;

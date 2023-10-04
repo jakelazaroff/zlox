@@ -1,8 +1,14 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
 
-pub fn init(code: []u8) Scanner {
-    return Scanner{ .code = code };
+pub fn init(alloc: std.mem.Allocator, code: []u8) !*Scanner {
+    var scanner = try alloc.create(Scanner);
+    scanner.code = code;
+    scanner.start = 0;
+    scanner.current = 0;
+    scanner.line = 1;
+
+    return scanner;
 }
 
 pub const Scanner = struct {

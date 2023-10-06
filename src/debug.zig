@@ -4,6 +4,9 @@ const _chunk = @import("./chunk.zig");
 const Chunk = _chunk.Chunk;
 const OpCode = _chunk.OpCode;
 
+const _value = @import("./value.zig");
+const ValueType = _value.ValueType;
+
 pub fn disassemble(chunk: *Chunk, name: []const u8) void {
     std.debug.print("== {s} ==\n", .{name});
 
@@ -30,8 +33,26 @@ fn disassembleInstruction(chunk: *Chunk, offset: usize) usize {
 
     // print instruction
     switch (instruction) {
+        .Nil => {
+            return simpleInstruction("OP_NIL", offset);
+        },
+        .True => {
+            return simpleInstruction("OP_TRUE", offset);
+        },
+        .False => {
+            return simpleInstruction("OP_FALSE", offset);
+        },
         .Return => {
             return simpleInstruction("OP_RETURN", offset);
+        },
+        .Equal => {
+            return simpleInstruction("OP_EQUAL", offset);
+        },
+        .Greater => {
+            return simpleInstruction("OP_GREATER", offset);
+        },
+        .Less => {
+            return simpleInstruction("OP_LESS", offset);
         },
         .Add => {
             return simpleInstruction("OP_ADD", offset);
@@ -44,6 +65,9 @@ fn disassembleInstruction(chunk: *Chunk, offset: usize) usize {
         },
         .Divide => {
             return simpleInstruction("OP_DIVIDE", offset);
+        },
+        .Not => {
+            return simpleInstruction("OP_NOT", offset);
         },
         .Negate => {
             return simpleInstruction("OP_NEGATE", offset);
@@ -66,6 +90,17 @@ fn simpleInstruction(name: []const u8, offset: usize) usize {
 fn constantInstruction(chunk: *Chunk, name: []const u8, offset: usize) usize {
     const idx = chunk.code.items[offset + 1][0];
     const value = chunk.constants.items[idx];
-    std.debug.print("{s: <16} {d: >4} '{d}'\n", .{ name, idx, value });
+    std.debug.print("{s: <16} {d: >4} ", .{ name, idx });
+    switch (@as(ValueType, value)) {
+        .Bool => {
+            std.debug.print("{}\n", .{value.Bool});
+        },
+        .Nil => {
+            std.debug.print("nil\n", .{});
+        },
+        .Number => {
+            std.debug.print("{d}\n", .{value.Number});
+        },
+    }
     return offset + 2;
 }

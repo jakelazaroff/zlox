@@ -130,7 +130,7 @@ pub const Scanner = struct {
             },
             'f' => {
                 if (self.current - self.start > 1) {
-                    switch (self.code[self.start]) {
+                    switch (self.code[self.start + 1]) {
                         'a' => {
                             return self.checkKeyword("false", .False);
                         },
@@ -150,7 +150,7 @@ pub const Scanner = struct {
                 return self.checkKeyword("if", .If);
             },
             'n' => {
-                return self.checkKeyword("else", .Nil);
+                return self.checkKeyword("nil", .Nil);
             },
             'o' => {
                 return self.checkKeyword("or", .Or);
@@ -166,7 +166,7 @@ pub const Scanner = struct {
             },
             't' => {
                 if (self.current - self.start > 1) {
-                    switch (self.code[self.start]) {
+                    switch (self.code[self.start + 1]) {
                         'h' => {
                             return self.checkKeyword("this", .This);
                         },
